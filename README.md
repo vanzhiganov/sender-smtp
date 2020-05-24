@@ -26,12 +26,20 @@ smtp:
 
 ### CURL
 
-Запрос
+Запрос для отправки письма в виде HTML
 
 ```sh
 curl localhost:5555/api/v1 -XPOST \
 -H 'X-Secret-Key: qwerty' \
--d '{"message": "wqeqwewe\ndwdwdw", "subject": "wqewqe", "to": "info@gmail.com", "content-type":"html"}' \
+-d '{"message": "wqeqwewe\ndwdwdw", "subject": "wqewqe", "to": "info@gmail.com", "content-type":"html"}'
+```
+
+Запрос для отправки письма в виде текста
+
+```sh
+curl localhost:5555/api/v1 -XPOST \
+-H 'X-Secret-Key: qwerty' \
+-d '{"message": "wqeqwewe\ndwdwdw", "subject": "wqewqe", "to": "info@gmail.com", "content-type":"plain"}'
 ```
 
 Ответ

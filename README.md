@@ -13,6 +13,7 @@ TODO: ...
 application:
     listen: 0.0.0.0:5555
     secret_key: qwerty
+    template_file: template.html
 smtp:
     server: smtp.google.com
     port: 587

@@ -124,42 +124,25 @@ func APIV1Sendmail(w http.ResponseWriter, r *http.Request) {
 	subject := string(request.Subject)
 	message := string(request.Message)
 
-	// response.ID = uuid.Must(uuid.NewV1().String(), nil)
-
 	response.ID = uuid.NewV1().String()
 
-	////////////
+	//
 	sender := NewSender(config.SMTP.Sender.Login, config.SMTP.Sender.Password)
 
 	bodyMessage := ""
 
 	if request.ContentType == "html" {
-		// TODO: store in database
-		htmlTemplate := `
-	<!DOCTYPE HTML PULBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-	<html>
-	<head>
-	<meta http-equiv="content-type" content="text/html"; charset=ISO-8859-1">
-	</head>
-	<body>{{ body | html }}<br>
-	<div class="moz-signature"><i><br>
-	<br>
-	Regards<br>
-	Biz Member<br>
-	<i></div>
-	</body>
-	</html>
-	`
+		doc := new(bytes.Buffer)
 
-		var doc bytes.Buffer
-		t := template.New("message")
-		t, _ = t.Parse(htmlTemplate)
-		t.Execute(&doc, message)
-		s := doc.String()
+		t, _ := template.ParseFiles(config.Application.TemplateFile)
 
-		log.Println(s)
+		if err = t.Execute(doc, message); err != nil {
+			// return err
+			log.Panicln(err)
+			w.WriteHeader(422)
+		}
 
-		bodyMessage = sender.WriteHTMLEmail(Receiver, subject, message)
+		bodyMessage = sender.WriteHTMLEmail(Receiver, subject, doc.String())
 	} else {
 		bodyMessage = sender.WritePlainEmail(Receiver, subject, message)
 	}

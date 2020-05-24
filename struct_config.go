@@ -3,8 +3,9 @@ package main
 // Configuration структура конфигурационного файла
 type Configuration struct {
 	Application struct {
-		Listen    string `yaml:"listen"`
-		SecretKey string `yaml:"secret_key"`
+		Listen       string `yaml:"listen"`
+		SecretKey    string `yaml:"secret_key"`
+		TemplateFile string `yaml:"template_file"`
 	}
 	Postgresql struct {
 		Host     string `yaml:"host"`

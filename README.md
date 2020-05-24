@@ -9,4 +9,32 @@ TODO: ...
 
 ### Пример файла конфигурации
 
-TODO: ...
+```yaml
+application:
+    listen: 0.0.0.0:5555
+    secret_key: qwerty
+smtp:
+    server: smtp.google.com
+    port: 587
+    sender:
+        login: noreply@google.com
+        password: $3cr3t
+```
+
+## Использование
+
+### CURL
+
+Запрос
+
+```sh
+curl localhost:5555/api/v1 -XPOST \
+-H 'X-Secret-Key: qwerty' \
+-d '{"message": "wqeqwewe\ndwdwdw", "subject": "wqewqe", "to": "info@gmail.com"}' \
+```
+
+Ответ
+
+```json
+{"id":"6f527846-9dc3-11ea-ae6e-c42c033a81ea"}
+```

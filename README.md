@@ -31,7 +31,7 @@ smtp:
 ```sh
 curl localhost:5555/api/v1 -XPOST \
 -H 'X-Secret-Key: qwerty' \
--d '{"message": "wqeqwewe\ndwdwdw", "subject": "wqewqe", "to": "info@gmail.com"}' \
+-d '{"message": "wqeqwewe\ndwdwdw", "subject": "wqewqe", "to": "info@gmail.com", "content-type":"html"}' \
 ```
 
 Ответ

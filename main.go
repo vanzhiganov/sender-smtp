@@ -2,14 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/getsentry/sentry-go"
 	"github.com/gorilla/mux"
 )
+
+// Version Версия приложения
+var Version = "0.1.0"
 
 func readAPIBody(w http.ResponseWriter, r *http.Request) (RequestStruct, error) {
 	var request RequestStruct
@@ -44,12 +49,19 @@ func handleRequests(config Configuration) {
 }
 
 func main() {
-	log.Println("Sender SMTP Rest API v0.1")
-	config.getConf()
+	switch arg := os.Args[1:][0]; arg {
+	case "runserver":
+		log.Println("Sender SMTP Rest API v" + Version)
+		config.getConf()
 
-	if config.Sentry.Enabled {
-		sentry.Init(sentry.ClientOptions{Dsn: config.Sentry.DSN})
+		if config.Sentry.Enabled {
+			sentry.Init(sentry.ClientOptions{Dsn: config.Sentry.DSN})
+		}
+
+		handleRequests(config)
+	case "version":
+		fmt.Println(Version)
+	default:
+		fmt.Printf("Unexpected argument: %s.\n", arg)
 	}
-
-	handleRequests(config)
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,10 +12,14 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/gorilla/mux"
+	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 )
 
 // Version Версия приложения
-var Version = "0.1.0"
+var Version = "0.2.0"
+
+// DBC ...
+var DBC *sql.DB
 
 func readAPIBody(w http.ResponseWriter, r *http.Request) (RequestStruct, error) {
 	var request RequestStruct
@@ -48,6 +53,38 @@ func handleRequests(config Configuration) {
 	log.Fatal(http.ListenAndServe(config.Application.Listen, myRouter))
 }
 
+func createTable(db *sql.DB) {
+	createSMTPTableSQL := `CREATE TABLE smtp (
+		"project_id" varchar(36) NOT NULL PRIMARY KEY,
+		"server" varchar(64),
+		"port" int,
+		"sender_login" varchar(128),
+		"sender_password" varchar(128)
+	);` // SQL Statement for Create Table
+
+	createTemplatesTableSQL := `CREATE TABLE templates (
+		"project_id" varchar(36) NOT NULL PRIMARY KEY,
+		"template" TEXT
+	);`
+
+	log.Println("Create student table...")
+	smtp, err := db.Prepare(createSMTPTableSQL) // Prepare SQL Statement
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	smtp.Exec() // Execute SQL Statements
+	log.Println("student table created")
+
+	log.Println("Create student table...")
+	statement, err := db.Prepare(createTemplatesTableSQL) // Prepare SQL Statement
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	statement.Exec() // Execute SQL Statements
+	log.Println("student table created")
+
+}
+
 func main() {
 	switch arg := os.Args[1:][0]; arg {
 	case "runserver":
@@ -58,7 +95,25 @@ func main() {
 			sentry.Init(sentry.ClientOptions{Dsn: config.Sentry.DSN})
 		}
 
+		DBC, _ = sql.Open("sqlite3", config.Application.DB)
+
 		handleRequests(config)
+	case "initdb":
+		config.getConf()
+
+		os.Remove(config.Application.DB) // I delete the file to avoid duplicated records. SQLite is a file based database.
+
+		log.Println("Creating sqlite-database.db...")
+		file, err := os.Create(config.Application.DB) // Create SQLite file
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		file.Close()
+		log.Println("sqlite-database.db created")
+
+		sqliteDatabase, _ := sql.Open("sqlite3", config.Application.DB) // Open the created SQLite File
+		defer sqliteDatabase.Close()                                    // Defer Closing the database
+		createTable(sqliteDatabase)                                     // Create Database Tables
 	case "version":
 		fmt.Println(Version)
 	default:

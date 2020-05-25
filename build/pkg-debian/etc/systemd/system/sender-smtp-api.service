@@ -1,0 +1,21 @@
+[Unit]
+Description=Sender SMTP API Service
+
+[Service]
+Environment=CONF=/etc/sender/smtp-api.yml
+ExecStart=/usr/bin/sender-smtp-api
+Restart=on-failure
+RestartSec=10
+KillSignal=SIGQUIT
+Type=simple
+NotifyAccess=all
+
+#User=sender
+#Group=sender
+
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=sender-smtp-api
+
+[Install]
+WantedBy=multi-user.target

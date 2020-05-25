@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	_ "github.com/mattn/go-sqlite3" // Import go-sqlite3 library
 	uuid "github.com/satori/go.uuid"
 )
 
@@ -29,14 +30,14 @@ func NewSender(Username, Password string) Sender {
 }
 
 // SendMail ...
-func (sender Sender) SendMail(conf Configuration, Dest []string, Subject, bodyMessage string) {
+func (sender Sender) SendMail(server string, port int, login string, password string, Dest []string, Subject, bodyMessage string) {
 
 	msg := "From: " + sender.Login + "\n" +
 		"To: " + strings.Join(Dest, ",") + "\n" +
 		"Subject: " + Subject + "\n" + bodyMessage
 
-	err := smtp.SendMail(conf.SMTP.Server+":"+strconv.Itoa(conf.SMTP.Port),
-		smtp.PlainAuth("", sender.Login, sender.Password, conf.SMTP.Server),
+	err := smtp.SendMail(server+":"+strconv.Itoa(port),
+		smtp.PlainAuth("", login, password, server),
 		sender.Login, Dest, []byte(msg))
 
 	if err != nil {
@@ -101,12 +102,42 @@ func APIV1Sendmail(w http.ResponseWriter, r *http.Request) {
 	var request RequestStruct
 	var response ResponseStruct
 
-	///
-	var secretKey string
-
 	// Необходимо будет проверять ключи
-	secretKey = r.Header.Get("X-Secret-Key")
+	secretKey := r.Header.Get("X-Secret-Key")
+	// ID проекта
+	projectID := r.Header.Get("X-Project-ID")
 
+	var smtpServer string
+	var smtpPort int
+	var smtpLogin string
+	var smtpPassword string
+	var smtpTemplate string
+
+	//
+	row, err0 := DBC.Query("SELECT server, port, sender_login, sender_password FROM smtp WHERE project_id='" + projectID + "' LIMIT 1;")
+	if err0 != nil {
+		log.Fatal(err0)
+		w.WriteHeader(403)
+		return
+	}
+	defer row.Close()
+	for row.Next() {
+		row.Scan(&smtpServer, &smtpPort, &smtpLogin, &smtpPassword)
+	}
+
+	//
+	row, err1 := DBC.Query("SELECT template FROM templates WHERE project_id='" + projectID + "' LIMIT 1;")
+	if err1 != nil {
+		log.Fatal(err1)
+		w.WriteHeader(403)
+		return
+	}
+	defer row.Close()
+	for row.Next() {
+		row.Scan(&smtpTemplate)
+	}
+
+	// проверка секретного ключа в проекте
 	if config.Application.SecretKey != secretKey {
 		w.WriteHeader(403)
 		return
@@ -127,14 +158,14 @@ func APIV1Sendmail(w http.ResponseWriter, r *http.Request) {
 	response.ID = uuid.NewV1().String()
 
 	//
-	sender := NewSender(config.SMTP.Sender.Login, config.SMTP.Sender.Password)
+	sender := NewSender(smtpLogin, smtpPassword)
 
 	bodyMessage := ""
 
 	if request.ContentType == "html" {
 		doc := new(bytes.Buffer)
 
-		t, _ := template.ParseFiles(config.Application.TemplateFile)
+		t, _ := template.New("template").Parse(smtpTemplate)
 
 		if err = t.Execute(doc, message); err != nil {
 			// return err
@@ -147,7 +178,7 @@ func APIV1Sendmail(w http.ResponseWriter, r *http.Request) {
 		bodyMessage = sender.WritePlainEmail(Receiver, subject, message)
 	}
 
-	sender.SendMail(config, Receiver, subject, bodyMessage)
+	sender.SendMail(smtpServer, smtpPort, smtpLogin, smtpPassword, Receiver, subject, bodyMessage)
 
 	data, _ := json.Marshal(response)
 

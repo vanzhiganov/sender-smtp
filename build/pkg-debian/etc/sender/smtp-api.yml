@@ -1,0 +1,4 @@
+application:
+    listen: 127.0.0.1:5555
+    secret_key: F1DD37F9-2751-459D-BF53-DCCC36AB1534
+    db: /etc/sender/smtp.db

@@ -1,0 +1,3 @@
+#!/bin/sh
+systemctl enable project-identity
+systemctl status project-identity

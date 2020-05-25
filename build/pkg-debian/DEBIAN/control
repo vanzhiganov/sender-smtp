@@ -1,0 +1,9 @@
+Package: sender-smtp-api
+#Version: ...
+Architecture: amd64
+Essential: no
+Section: web
+Priority: optional
+Maintainer: Vyacheslav Anzhiganov
+#Installed-Size: ...
+Description: The Sender SMTP API Server.

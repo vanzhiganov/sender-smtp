@@ -1,0 +1,3 @@
+/etc/sender/smtp-api.yml
+/etc/systemd/system/sender-smtp-api.service
+/etc/rsyslog.d/30-sender-smtp-api.conf

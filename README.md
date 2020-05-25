@@ -13,13 +13,7 @@ TODO: ...
 application:
     listen: 0.0.0.0:5555
     secret_key: qwerty
-    template_file: template.html
-smtp:
-    server: smtp.google.com
-    port: 587
-    sender:
-        login: noreply@google.com
-        password: $3cr3t
+    db: /etc/senderapi/database.db
 ```
 
 ## Использование
@@ -31,6 +25,7 @@ smtp:
 ```sh
 curl localhost:5555/api/v1 -XPOST \
 -H 'X-Secret-Key: qwerty' \
+-H 'X-Project-ID: 3854d9ce-9e27-11ea-9b45-c42c033a81ea' \
 -d '{"message": "wqeqwewe\ndwdwdw", "subject": "wqewqe", "to": "info@gmail.com", "content-type":"html"}'
 ```
 
@@ -39,6 +34,7 @@ curl localhost:5555/api/v1 -XPOST \
 ```sh
 curl localhost:5555/api/v1 -XPOST \
 -H 'X-Secret-Key: qwerty' \
+-H 'X-Project-ID: 3854d9ce-9e27-11ea-9b45-c42c033a81ea' \
 -d '{"message": "wqeqwewe\ndwdwdw", "subject": "wqewqe", "to": "info@gmail.com", "content-type":"plain"}'
 ```
 

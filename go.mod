@@ -7,6 +7,7 @@ require (
 	github.com/go-delve/delve v1.4.1 // indirect
 	github.com/gorilla/mux v1.7.4
 	github.com/lib/pq v1.5.2 // indirect
+	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/satori/go.uuid v1.2.0
 	gopkg.in/yaml.v3 v3.0.0-20200506231410-2ff61e1afc86
 )
